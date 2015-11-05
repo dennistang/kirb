@@ -4,6 +4,7 @@ from os import path
 
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
+__import__('pkg_resources').declare_namespace(__name__)
 
 
 class ChangeHandler(FileSystemEventHandler):
@@ -29,7 +30,7 @@ class Watcher(object):
                         raise Exception('onchange callback errored for file ' + src_path)
                     used_onchanges.append(callbacks['onchange'].__name__)
                 self._compile(files, callbacks, path.abspath(out))
-                
+
     def _compile(self, files, callbacks, out):
         if 'mode' in callbacks and callbacks['mode'] is 'slurp':
             slurpy = []
@@ -67,7 +68,7 @@ class Watcher(object):
             info("Wrote file: " + out)
             if 'post' in callbacks:
                 callbacks['post'](out)
-    
+
     def compile(self):
         for out in self.outputs:
             props = self.file_set[out]
@@ -75,7 +76,7 @@ class Watcher(object):
             callbacks = props['callbacks']
             if not 'no_out' in callbacks or not callbacks['no_out']:
                 self._compile(files, callbacks, path.abspath(out))
-    
+
     def add_file_set(self, out, files, callbacks = {}):
         if out in self.file_set:
             raise Exception('out file is already in use by another FileSet')
@@ -84,7 +85,7 @@ class Watcher(object):
         self.outputs.append(out)
         self.file_set[out] = {'files' : files, 'callbacks' : callbacks}
         return out
-    
+
     def add_mirror_set(self, orig, new, addl = None):
         if type(orig) is not str:
             raise TypeError('orig list is a required  argument')
@@ -108,16 +109,16 @@ class Watcher(object):
         callbacks['no_out'] = False
         self.outputs.append(out)
         self.file_set[out] = {'files' : files, 'callbacks' : callbacks}
-    
+
     def stop(self):
         self.observer.stop()
-    
+
     def start(self):
         event_handler = ChangeHandler(self._on_file_changed)
         self.observer = Observer()
         self.observer.schedule(event_handler, self.root, recursive=True)
         self.observer.start()
-    
+
     def __init__(self, root):
         self.root = path.abspath(root)
         self.file_set = {}
